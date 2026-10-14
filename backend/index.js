@@ -5,6 +5,7 @@ const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const authorize = require('./middleware/authorize');
+const axios = require('axios');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -165,6 +166,46 @@ app.delete('/api/matches/:id', authorize, async (req, res) => {
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: 'Eroare la ștergerea meciului' });
+    }
+});
+
+// 5. Căutare meciuri după numele echipei folosind API-Football
+app.get('/api/search-matches', authorize, async (req, res) => {
+    try {
+        const { team } = req.query; 
+
+        if (!team) {
+            return res.status(400).json({ error: 'Te rog să introduci numele unei echipe!' });
+        }
+
+        // PASUL 1: Căutăm echipa după nume pentru a-i afla ID-ul
+        const teamResponse = await axios.get(`https://v3.football.api-sports.io/teams?search=${encodeURIComponent(team)}`, {
+            headers: {
+                'x-apisports-key': process.env.FOOTBALL_API_KEY
+            }
+        });
+        
+        // Verificăm dacă API-ul a găsit echipa
+        if (!teamResponse.data.response || teamResponse.data.response.length === 0) {
+            return res.json({ message: "Nu am găsit nicio echipă cu acest nume.", matches: [] });
+        }
+
+        const teamId = teamResponse.data.response[0].team.id; // Extragem ID-ul unic al echipei
+
+        // PASUL 2: Cerem toate meciurile acestei echipe pentru sezonul curent (2026)
+        const currentYear = 2024;
+
+        // Folosim anul curent pentru a cere meciurile din prezent
+        const matchesResponse = await axios.get(`https://v3.football.api-sports.io/fixtures?team=${teamId}&season=${currentYear}`, {
+            headers: {
+                'x-apisports-key': process.env.FOOTBALL_API_KEY
+            }
+        });
+        // Trimitem lista completă de meciuri
+        res.json(matchesResponse.data.response);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Eroare la preluarea datelor externe' });
     }
 });
 
