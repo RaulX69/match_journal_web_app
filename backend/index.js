@@ -25,26 +25,22 @@ const pool = new Pool({
 // Ruta pentru creare cont (Register)
 app.post('/api/register', async (req, res) => {
     try {
-        // Extragem email-ul și parola trimise de utilizator
+        
         const { email, password } = req.body;
 
-        // 1. Verificăm dacă email-ul există deja în baza de date
         const userExists = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         if (userExists.rows.length > 0) {
             return res.status(400).json({ error: 'Acest email este deja folosit!' });
         }
 
-        // 2. Criptăm parola (hashing)
         const salt = await bcrypt.genSalt(10);
         const bcryptPassword = await bcrypt.hash(password, salt);
 
-        // 3. Inserăm noul utilizator în baza de date
         const newUser = await pool.query(
             'INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email, created_at',
             [email, bcryptPassword]
         );
 
-        // Răspundem cu datele utilizatorului (fără parolă!)
         res.json({ message: 'Cont creat cu succes!', user: newUser.rows[0] });
 
     } catch (err) {
@@ -56,31 +52,27 @@ app.post('/api/register', async (req, res) => {
 // Ruta pentru autentificare (Login)
 app.post('/api/login', async (req, res) => {
     try {
-        // 1. Extragem datele trimise de utilizator
+
         const { email, password } = req.body;
 
-        // 2. Căutăm utilizatorul în baza de date
         const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         
         if (user.rows.length === 0) {
             return res.status(401).json({ error: 'Email sau parolă incorectă!' });
         }
 
-        // 3. Verificăm dacă parola introdusă se potrivește cu cea criptată din DB
         const validPassword = await bcrypt.compare(password, user.rows[0].password_hash);
         
         if (!validPassword) {
             return res.status(401).json({ error: 'Email sau parolă incorectă!' });
         }
 
-        // 4. Generăm token-ul JWT (brățara de acces)
         const token = jwt.sign(
-            { user_id: user.rows[0].id }, // Ascundem ID-ul utilizatorului în token
-            process.env.JWT_SECRET,       // Semnăm cu cheia noastră secretă
-            { expiresIn: '1h' }           // Setăm o valabilitate de o oră
+            { user_id: user.rows[0].id },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
         );
 
-        // Răspundem cu token-ul generat
         res.json({ message: 'Autentificare reușită!', token: token });
 
     } catch (err) {
@@ -89,13 +81,12 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 1. CREATE: Adăugarea unui meci nou în jurnal
+// Ruta pentru adăugarea unui meci nou în jurnal
 app.post('/api/matches', authorize, async (req, res) => {
     try {
-        // Extragem datele trimise din interfață/Thunder Client
+
         const { home_team, away_team, home_score, away_score, match_date, rating, review } = req.body;
         
-        // req.user vine direct din middleware-ul 'authorize' (este ID-ul extras din token)
         const newMatch = await pool.query(
             `INSERT INTO matches 
             (user_id, home_team, away_team, home_score, away_score, match_date, rating, review) 
@@ -110,10 +101,10 @@ app.post('/api/matches', authorize, async (req, res) => {
     }
 });
 
-// 2. READ: Obținerea tuturor meciurilor pentru utilizatorul logat
+// Ruta pentru obținerea tuturor meciurilor pentru utilizatorul logat
 app.get('/api/matches', authorize, async (req, res) => {
     try {
-        // Selectăm meciurile din DB și le ordonăm descrescător după dată (cele mai noi primele)
+
         const matches = await pool.query(
             'SELECT * FROM matches WHERE user_id = $1 ORDER BY match_date DESC',
             [req.user]
@@ -126,11 +117,11 @@ app.get('/api/matches', authorize, async (req, res) => {
     }
 });
 
-// 3. UPDATE: Editarea unui meci existent
+// Ruta pentru editarea unui meci existent
 app.put('/api/matches/:id', authorize, async (req, res) => {
     try {
         const { id } = req.params;
-        const { rating, review } = req.body; // Vom permite modificarea doar a rating-ului și recenziei
+        const { rating, review } = req.body;
 
         const updateMatch = await pool.query(
             'UPDATE matches SET rating = $1, review = $2 WHERE id = $3 AND user_id = $4 RETURNING *',
@@ -148,7 +139,7 @@ app.put('/api/matches/:id', authorize, async (req, res) => {
     }
 });
 
-// 4. DELETE: Ștergerea unui meci din jurnal
+// Ruta pentru ștergerea unui meci din jurnal
 app.delete('/api/matches/:id', authorize, async (req, res) => {
     try {
         const { id } = req.params;
@@ -169,7 +160,7 @@ app.delete('/api/matches/:id', authorize, async (req, res) => {
     }
 });
 
-// 5. Căutare meciuri după numele echipei folosind API-Football
+// Ruta pentru căutarea meciurilor după numele echipei folosind API-Football
 app.get('/api/search-matches', authorize, async (req, res) => {
     try {
         const { team } = req.query; 
@@ -178,30 +169,26 @@ app.get('/api/search-matches', authorize, async (req, res) => {
             return res.status(400).json({ error: 'Te rog să introduci numele unei echipe!' });
         }
 
-        // PASUL 1: Căutăm echipa după nume pentru a-i afla ID-ul
         const teamResponse = await axios.get(`https://v3.football.api-sports.io/teams?search=${encodeURIComponent(team)}`, {
             headers: {
                 'x-apisports-key': process.env.FOOTBALL_API_KEY
             }
         });
         
-        // Verificăm dacă API-ul a găsit echipa
         if (!teamResponse.data.response || teamResponse.data.response.length === 0) {
             return res.json({ message: "Nu am găsit nicio echipă cu acest nume.", matches: [] });
         }
 
-        const teamId = teamResponse.data.response[0].team.id; // Extragem ID-ul unic al echipei
+        const teamId = teamResponse.data.response[0].team.id;
 
-        // PASUL 2: Cerem toate meciurile acestei echipe pentru sezonul curent (2026)
         const currentYear = 2024;
 
-        // Folosim anul curent pentru a cere meciurile din prezent
         const matchesResponse = await axios.get(`https://v3.football.api-sports.io/fixtures?team=${teamId}&season=${currentYear}`, {
             headers: {
                 'x-apisports-key': process.env.FOOTBALL_API_KEY
             }
         });
-        // Trimitem lista completă de meciuri
+
         res.json(matchesResponse.data.response);
     } catch (err) {
         console.error(err.message);
