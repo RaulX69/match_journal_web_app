@@ -2,7 +2,7 @@ const searchBtn = document.getElementById('search-btn');
 const teamInput = document.getElementById('team-input');
 const matchesContainer = document.getElementById('matches-container');
 
-const TEMP_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJpYXQiOjE3OTI0MDY5OTgsImV4cCI6MTc5MjQxMDU5OH0.8Xlh8yt0e3JhMorsRbDw_FJpfQ7VAIsmcDWE-ULAG-s"; 
+const TEMP_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJpYXQiOjE3OTI1MDk1NzMsImV4cCI6MTc5MjUxMzE3M30.mnbpnWM0Sq5ggC-LxUpQ_GwEtzu0pGKQM_VtIV_qQ_k"; 
 
 searchBtn.addEventListener('click', async () => {
     const team = teamInput.value.trim();
@@ -31,6 +31,7 @@ searchBtn.addEventListener('click', async () => {
 
         matchesContainer.innerHTML = '';
 
+        // Generăm o "mini-cartelă" HTML pentru fiecare meci
         matches.forEach(match => {
             const matchDate = new Date(match.fixture.date).toLocaleDateString('ro-RO');
             
@@ -39,6 +40,9 @@ searchBtn.addEventListener('click', async () => {
             matchCard.style.padding = '15px';
             matchCard.style.borderRadius = '8px';
             matchCard.style.backgroundColor = 'white';
+            matchCard.style.display = 'flex';
+            matchCard.style.flexDirection = 'column';
+            matchCard.style.gap = '15px';
             
             matchCard.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -55,7 +59,51 @@ searchBtn.addEventListener('click', async () => {
                         <p><strong>${match.teams.away.name}</strong></p>
                     </div>
                 </div>
+                <button class="save-btn" style="padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                    Adaugă în jurnal
+                </button>
             `;
+            
+            // Selectăm butonul din interiorul acestei cartele specifice
+            const saveBtn = matchCard.querySelector('.save-btn');
+            
+            // Funcția care rulează când utilizatorul apasă butonul
+            saveBtn.addEventListener('click', async () => {
+                try {
+                    // Schimbăm textul pentru a arăta că se procesează
+                    saveBtn.textContent = 'Se salvează...';
+                    
+                    const response = await fetch('http://localhost:5000/api/matches', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'token': TEMP_TOKEN
+                        },
+                        // Aici trimitem datele extrase din API-Football către backend-ul tău
+                        body: JSON.stringify({
+                            home_team: match.teams.home.name,
+                            away_team: match.teams.away.name,
+                            home_score: match.goals.home,
+                            away_score: match.goals.away,
+                            match_date: match.fixture.date
+                        })
+                    });
+
+                    if (response.ok) {
+                        saveBtn.textContent = '✓ Adăugat în jurnal';
+                        saveBtn.style.backgroundColor = '#6c757d'; // Îl facem gri ca să arate inactiv
+                        saveBtn.disabled = true;
+                    } else {
+                        const errorData = await response.json();
+                        alert(`Eroare: ${errorData.error || 'Nu am putut salva meciul.'}`);
+                        saveBtn.textContent = 'Adaugă în jurnal'; // Resetăm textul în caz de eroare
+                    }
+                } catch (error) {
+                    console.error('Eroare la salvare:', error);
+                    alert('Eroare de rețea. Asigură-te că serverul merge.');
+                    saveBtn.textContent = 'Adaugă în jurnal';
+                }
+            });
             
             matchesContainer.appendChild(matchCard);
         });

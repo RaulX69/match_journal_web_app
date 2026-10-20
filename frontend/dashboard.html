@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Jurnalul Meu</title>
+    <!-- Folosim același fișier CSS pentru un design uniform -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Buton de înapoi -->
+        <nav style="margin-bottom: 20px;">
+            <a href="index.html" style="text-decoration: none; color: #007bff; font-weight: bold;">&larr; Înapoi la Căutare</a>
+        </nav>
+
+        <h1>Meciurile Mele Salvate</h1>
+        
+        <!-- Aici vom injecta meciurile din baza de date -->
+        <div id="saved-matches-container" class="matches-list">
+            <p style="text-align: center;">Se încarcă jurnalul...</p>
+        </div>
+    </div>
+    
+    <script src="dashboard.js"></script>
+</body>
+</html>

@@ -196,6 +196,31 @@ app.get('/api/search-matches', authorize, async (req, res) => {
     }
 });
 
+// Actualizează recenzia și rating-ul unui meci existent
+app.put('/api/matches/:id', authorize, async (req, res) => {
+    try {
+        const matchId = req.params.id;
+        const { rating, review } = req.body;
+        
+        const updateMatch = await pool.query(
+            `UPDATE matches 
+             SET rating = $1, review = $2 
+             WHERE api_match_id = $3 AND user_id = $4 
+             RETURNING *`,
+            [rating, review, matchId, req.user]
+        );
+
+        if (updateMatch.rows.length === 0) {
+            return res.status(404).json({ error: 'Meciul nu a fost găsit sau nu îți aparține!' });
+        }
+
+        res.json({ message: 'Recenzie adăugată cu succes!', match: updateMatch.rows[0] });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Eroare internă la salvarea recenziei' });
+    }
+});
+
 app.get('/', (req, res) => {
     res.send('Serverul funcționează perfect!');
 });
