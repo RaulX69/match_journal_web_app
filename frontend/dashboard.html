@@ -4,19 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Jurnalul Meu</title>
-    <!-- Folosim același fișier CSS pentru un design uniform -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-container">
-        <!-- Buton de înapoi -->
         <nav style="margin-bottom: 20px;">
             <a href="index.html" style="text-decoration: none; color: #007bff; font-weight: bold;">&larr; Înapoi la Căutare</a>
         </nav>
 
+        <div style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 20px;">
+            <div id="profile-info">
+                <p style="margin: 0; font-size: 16px;">Se încarcă datele...</p>
+            </div>
+            <button id="logout-btn" style="padding: 8px 16px; background-color: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                Deconectare
+            </button>
+        </div>
+
         <h1>Meciurile Mele Salvate</h1>
+
+        <div id="stats-container" style="display: flex; justify-content: space-around; background-color: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <div style="text-align: center;">
+                <h3 style="margin: 0; color: #007bff; font-size: 16px; text-transform: uppercase;">Total Meciuri</h3>
+                <p id="stat-total" style="font-size: 28px; font-weight: bold; margin: 5px 0 0 0;">0</p>
+            </div>
+            <div style="text-align: center;">
+                <h3 style="margin: 0; color: #28a745; font-size: 16px; text-transform: uppercase;">Echipa Favorită</h3>
+                <p id="stat-favorite" style="font-size: 24px; font-weight: bold; margin: 5px 0 0 0; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">-</p>
+            </div>
+            <div style="text-align: center;">
+                <h3 style="margin: 0; color: #dc3545; font-size: 16px; text-transform: uppercase;">Media Goluri/Meci</h3>
+                <p id="stat-goals" style="font-size: 28px; font-weight: bold; margin: 5px 0 0 0;">0.00</p>
+            </div>
+        </div>
         
-        <!-- Aici vom injecta meciurile din baza de date -->
         <div id="saved-matches-container" class="matches-list">
             <p style="text-align: center;">Se încarcă jurnalul...</p>
         </div>

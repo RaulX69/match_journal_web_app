@@ -26,7 +26,7 @@ const pool = new Pool({
 app.post('/api/register', async (req, res) => {
     try {
         
-        const { email, password } = req.body;
+        const { name, email, password } = req.body;
 
         const userExists = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         if (userExists.rows.length > 0) {
@@ -37,8 +37,8 @@ app.post('/api/register', async (req, res) => {
         const bcryptPassword = await bcrypt.hash(password, salt);
 
         const newUser = await pool.query(
-            'INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email, created_at',
-            [email, bcryptPassword]
+            'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email, created_at',
+            [name, email, bcryptPassword]
         );
 
         res.json({ message: 'Cont creat cu succes!', user: newUser.rows[0] });
@@ -78,6 +78,25 @@ app.post('/api/login', async (req, res) => {
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: 'Eroare internă de server' });
+    }
+});
+
+// Ruta pentru obținerea datelor profilului utilizatorului curent
+app.get('/auth/me', authorize, async (req, res) => {
+    try {
+        const user = await pool.query(
+            'SELECT id, name, email FROM users WHERE id = $1', 
+            [req.user]
+        );
+
+        if (user.rows.length === 0) {
+            return res.status(404).json({ error: 'Utilizatorul nu a fost găsit.' });
+        }
+
+        res.json(user.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Eroare de server la încărcarea profilului.' });
     }
 });
 
@@ -193,31 +212,6 @@ app.get('/api/search-matches', authorize, async (req, res) => {
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: 'Eroare la preluarea datelor externe' });
-    }
-});
-
-// Actualizează recenzia și rating-ul unui meci existent
-app.put('/api/matches/:id', authorize, async (req, res) => {
-    try {
-        const matchId = req.params.id;
-        const { rating, review } = req.body;
-        
-        const updateMatch = await pool.query(
-            `UPDATE matches 
-             SET rating = $1, review = $2 
-             WHERE api_match_id = $3 AND user_id = $4 
-             RETURNING *`,
-            [rating, review, matchId, req.user]
-        );
-
-        if (updateMatch.rows.length === 0) {
-            return res.status(404).json({ error: 'Meciul nu a fost găsit sau nu îți aparține!' });
-        }
-
-        res.json({ message: 'Recenzie adăugată cu succes!', match: updateMatch.rows[0] });
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).json({ error: 'Eroare internă la salvarea recenziei' });
     }
 });
 

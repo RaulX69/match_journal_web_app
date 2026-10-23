@@ -1,8 +1,11 @@
 const searchBtn = document.getElementById('search-btn');
 const teamInput = document.getElementById('team-input');
 const matchesContainer = document.getElementById('matches-container');
+const token = localStorage.getItem('token');
 
-const TEMP_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJpYXQiOjE3OTI1MDk1NzMsImV4cCI6MTc5MjUxMzE3M30.mnbpnWM0Sq5ggC-LxUpQ_GwEtzu0pGKQM_VtIV_qQ_k"; 
+if (!token || token === 'undefined' || token === 'null') {
+    window.location.href = 'login.html';
+}
 
 searchBtn.addEventListener('click', async () => {
     const team = teamInput.value.trim();
@@ -18,7 +21,8 @@ searchBtn.addEventListener('click', async () => {
         const response = await fetch(`http://localhost:5000/api/search-matches?team=${encodeURIComponent(team)}`, {
             method: 'GET',
             headers: {
-                'token': TEMP_TOKEN
+                'Content-Type': 'application/json',
+                'token': token
             }
         });
 
@@ -31,7 +35,6 @@ searchBtn.addEventListener('click', async () => {
 
         matchesContainer.innerHTML = '';
 
-        // Generăm o "mini-cartelă" HTML pentru fiecare meci
         matches.forEach(match => {
             const matchDate = new Date(match.fixture.date).toLocaleDateString('ro-RO');
             
@@ -64,22 +67,18 @@ searchBtn.addEventListener('click', async () => {
                 </button>
             `;
             
-            // Selectăm butonul din interiorul acestei cartele specifice
             const saveBtn = matchCard.querySelector('.save-btn');
             
-            // Funcția care rulează când utilizatorul apasă butonul
             saveBtn.addEventListener('click', async () => {
                 try {
-                    // Schimbăm textul pentru a arăta că se procesează
                     saveBtn.textContent = 'Se salvează...';
                     
                     const response = await fetch('http://localhost:5000/api/matches', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'token': TEMP_TOKEN
+                            'token': token
                         },
-                        // Aici trimitem datele extrase din API-Football către backend-ul tău
                         body: JSON.stringify({
                             home_team: match.teams.home.name,
                             away_team: match.teams.away.name,
@@ -91,12 +90,12 @@ searchBtn.addEventListener('click', async () => {
 
                     if (response.ok) {
                         saveBtn.textContent = '✓ Adăugat în jurnal';
-                        saveBtn.style.backgroundColor = '#6c757d'; // Îl facem gri ca să arate inactiv
+                        saveBtn.style.backgroundColor = '#6c757d';
                         saveBtn.disabled = true;
                     } else {
                         const errorData = await response.json();
                         alert(`Eroare: ${errorData.error || 'Nu am putut salva meciul.'}`);
-                        saveBtn.textContent = 'Adaugă în jurnal'; // Resetăm textul în caz de eroare
+                        saveBtn.textContent = 'Adaugă în jurnal';
                     }
                 } catch (error) {
                     console.error('Eroare la salvare:', error);
