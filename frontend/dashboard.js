@@ -1,5 +1,6 @@
 const savedMatchesContainer = document.getElementById('saved-matches-container');
 const token = localStorage.getItem('token');
+let map;
 
 if (!token || token === 'undefined' || token === 'null') {
     window.location.href = 'login.html';
@@ -17,6 +18,7 @@ async function loadSavedMatches() {
 
         const matches = await response.json();
         calculateAndDisplayStats(matches);
+        renderMap(matches);
         savedMatchesContainer.innerHTML = '';
 
         if (matches.length === 0) {
@@ -29,30 +31,31 @@ async function loadSavedMatches() {
             const matchId = match.id;
             
             const matchCard = document.createElement('div');
-            matchCard.style.border = '2px solid #28a745';
-            matchCard.style.padding = '15px';
-            matchCard.style.borderRadius = '8px';
-            matchCard.style.backgroundColor = 'white';
-            matchCard.style.marginBottom = '20px';
+            matchCard.className = 'match-card';
             
             matchCard.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div style="text-align: center; flex: 1;">
-                        <p style="font-size: 18px;"><strong>${match.home_team}</strong></p>
+                <div class="match-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    
+                    <div style="flex: 1; text-align: center;">
+                        <img src="${match.home_logo || 'default-logo.png'}" alt="Home Logo" style="width: 50px; height: 50px; object-fit: contain; margin-bottom: 5px;">
+                        <div class="team-name">${match.home_team}</div>
                     </div>
-                    <div style="text-align: center; flex: 1;">
-                        <h2 style="margin-bottom: 5px;">${match.home_score ?? '-'} : ${match.away_score ?? '-'}</h2>
-                        <span style="background: #eee; padding: 3px 8px; border-radius: 12px; font-size: 12px;">${matchDate}</span>
+                    
+                    <div style="text-align: center;">
+                        <div class="score-badge">${match.home_score ?? '-'} : ${match.away_score ?? '-'}</div>
+                        <div style="margin-top: 8px; font-size: 13px; color: #aaa;">${matchDate}</div>
                     </div>
-                    <div style="text-align: center; flex: 1;">
-                        <p style="font-size: 18px;"><strong>${match.away_team}</strong></p>
+                    
+                    <div style="flex: 1; text-align: center;">
+                        <img src="${match.away_logo || 'default-logo.png'}" alt="Away Logo" style="width: 50px; height: 50px; object-fit: contain; margin-bottom: 5px;">
+                        <div class="team-name">${match.away_team}</div>
                     </div>
+                    
                 </div>
                 
-                <div style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px; text-align: center;">
-                    <h4 style="margin-bottom: 10px;">Cum ți s-a părut meciul?</h4>
+                <div style="margin-top: 20px; border-top: 1px dashed #eaeaea; padding-top: 20px; text-align: center;">
                     
-                    <div class="stars-container" style="font-size: 24px; cursor: pointer; color: #ccc; margin-bottom: 10px;">
+                    <div class="stars-container" style="font-size: 28px; cursor: pointer; margin-bottom: 15px;">
                         <span class="star" data-value="1">★</span>
                         <span class="star" data-value="2">★</span>
                         <span class="star" data-value="3">★</span>
@@ -60,16 +63,23 @@ async function loadSavedMatches() {
                         <span class="star" data-value="5">★</span>
                     </div>
                     
-                    <textarea class="review-input" rows="3" style="width: 100%; max-width: 400px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" placeholder="Scrie părerea ta aici...">${match.review || ''}</textarea>
-                    <br>
+                    <textarea class="review-input" rows="3" placeholder="Scrie părerea ta aici...">${match.review || ''}</textarea>
                     
-                    <button class="save-review-btn" style="margin-top: 10px; padding: 8px 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        Salvează Părerea
-                    </button>
+                    <div style="margin-top: 15px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-primary save-review-btn">Salvează Părerea</button>
+                        <button class="btn btn-danger delete-btn">Șterge</button>
+                    </div>
+                </div>
 
-                    <button class="delete-btn" style="margin-top: 10px; margin-left: 10px; padding: 8px 16px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        Șterge
-                    </button>
+                <div style="margin-top: 20px; padding: 15px; border-radius: 8px; text-align: center;">
+                    ${match.image_url 
+                        ? `<img src="${match.image_url}" alt="Poză meci" style="max-width: 100%; max-height: 300px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">` 
+                        : `<p style="font-size: 14px; margin-bottom: 10px;">Nu ai adăugat o poză încă.</p>`
+                    }
+                    <div style="display: flex; justify-content: center; gap: 10px; align-items: center;">
+                        <input type="file" class="image-input" accept="image/*" style="font-size: 14px; max-width: 220px;">
+                        <button class="btn btn-info upload-image-btn">Încarcă Poză</button>
+                    </div>
                 </div>
             `;
             
@@ -78,15 +88,51 @@ async function loadSavedMatches() {
             const stars = matchCard.querySelectorAll('.star');
             const reviewInput = matchCard.querySelector('.review-input');
             const saveReviewBtn = matchCard.querySelector('.save-review-btn');
+            const imageInput = matchCard.querySelector('.image-input');
+            const uploadImageBtn = matchCard.querySelector('.upload-image-btn');
+
+            uploadImageBtn.addEventListener('click', async () => {
+                const file = imageInput.files[0];
+                if (!file) {
+                    alert('Te rog să selectezi o imagine mai întâi.');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('match_image', file);
+
+                try {
+                    uploadImageBtn.textContent = 'Se încarcă...';
+                    const response = await fetch(`http://localhost:5000/api/matches/${matchId}/image`, {
+                        method: 'POST',
+                        headers: {
+                            'token': token
+                        },
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        alert('Poză adăugată cu succes!');
+                        loadSavedMatches(); 
+                    } else {
+                        alert('Eroare la salvarea pozei.');
+                        uploadImageBtn.textContent = '📷 Încarcă';
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert('Eroare de conexiune.');
+                    uploadImageBtn.textContent = '📷 Încarcă';
+                }
+            });
             
             let currentRating = match.rating || 0;
 
             const updateStarsUI = (ratingValue) => {
                 stars.forEach(star => {
                     if (star.getAttribute('data-value') <= ratingValue) {
-                        star.style.color = '#ffc107'; // Auriu
+                        star.style.color = '#ffc107';
                     } else {
-                        star.style.color = '#ccc'; // Gri
+                        star.style.color = '#ccc';
                     }
                 });
             };
@@ -172,6 +218,33 @@ async function loadSavedMatches() {
 }
 
 loadSavedMatches();
+
+function renderMap(matches) {
+    if (map) {
+        map.remove();
+    }
+
+    map = L.map('map').setView([48.0, 15.0], 4);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let hasMarkers = false;
+
+    matches.forEach(match => {
+        if (match.lat && match.lng) {
+            hasMarkers = true;
+            const marker = L.marker([match.lat, match.lng]).addTo(map);
+            
+            marker.bindPopup(`
+                <strong>${match.stadium_name || 'Stadion'}</strong><br>
+                ${match.home_team} vs ${match.away_team}<br>
+                Scor: ${match.home_score} - ${match.away_score}
+            `);
+        }
+    });
+}
 
 function calculateAndDisplayStats(matches) {
     if (!matches || matches.length === 0) return;

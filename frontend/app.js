@@ -37,37 +37,38 @@ searchBtn.addEventListener('click', async () => {
 
         matches.forEach(match => {
             const matchDate = new Date(match.fixture.date).toLocaleDateString('ro-RO');
-            
+
             const matchCard = document.createElement('div');
-            matchCard.style.border = '1px solid #ccc';
-            matchCard.style.padding = '15px';
-            matchCard.style.borderRadius = '8px';
-            matchCard.style.backgroundColor = 'white';
-            matchCard.style.display = 'flex';
-            matchCard.style.flexDirection = 'column';
-            matchCard.style.gap = '15px';
-            
+            matchCard.className = 'match-card';
+
             matchCard.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div style="text-align: center; flex: 1;">
-                        <img src="${match.teams.home.logo}" width="60" alt="${match.teams.home.name}">
-                        <p><strong>${match.teams.home.name}</strong></p>
-                    </div>
-                    <div style="text-align: center; flex: 1;">
-                        <h2 style="margin-bottom: 5px;">${match.goals.home ?? '-'} : ${match.goals.away ?? '-'}</h2>
-                        <span style="background: #eee; padding: 3px 8px; border-radius: 12px; font-size: 12px;">${matchDate}</span>
-                    </div>
-                    <div style="text-align: center; flex: 1;">
-                        <img src="${match.teams.away.logo}" width="60" alt="${match.teams.away.name}">
-                        <p><strong>${match.teams.away.name}</strong></p>
-                    </div>
+            <div class="match-header" style="display: flex; justify-content: space-between; align-items: center;">
+        
+                <div style="flex: 1; text-align: center;">
+                    <img src="${match.teams.home.logo}" alt="Home Logo" style="width: 50px; height: 50px; object-fit: contain; margin-bottom: 5px;">
+                    <div class="team-name" style="font-size: 18px;">${match.teams.home.name}</div>
                 </div>
-                <button class="save-btn" style="padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
-                    Adaugă în jurnal
+        
+                <div style="text-align: center;">
+                    <div class="score-badge">${match.goals.home ?? '-'} : ${match.goals.away ?? '-'}</div>
+                    <div style="margin-top: 8px; font-size: 13px; color: #aaa;">${new Date(match.fixture.date).toLocaleDateString()}</div>
+                </div>
+        
+                <div style="flex: 1; text-align: center;">
+                    <img src="${match.teams.away.logo}" alt="Away Logo" style="width: 50px; height: 50px; object-fit: contain; margin-bottom: 5px;">
+                    <div class="team-name" style="font-size: 18px;">${match.teams.away.name}</div>
+                </div>
+        
+            </div>
+
+            <div style="margin-top: 20px; text-align: center; border-top: 1px dashed #333; padding-top: 20px;">
+                <button class="btn btn-success add-to-journal-btn" style="width: 100%; max-width: 300px; font-size: 16px;">
+                 ➕ Adaugă în Jurnal
                 </button>
-            `;
+            </div>
+        `;
             
-            const saveBtn = matchCard.querySelector('.save-btn');
+            const saveBtn = matchCard.querySelector('.add-to-journal-btn');
             
             saveBtn.addEventListener('click', async () => {
                 try {
@@ -81,10 +82,18 @@ searchBtn.addEventListener('click', async () => {
                         },
                         body: JSON.stringify({
                             home_team: match.teams.home.name,
+                            home_logo: match.teams.home.logo,
                             away_team: match.teams.away.name,
+                            away_logo: match.teams.away.logo,
                             home_score: match.goals.home,
                             away_score: match.goals.away,
-                            match_date: match.fixture.date
+                            match_date: match.fixture.date,
+                            stadium_id: match.fixture.venue.id,
+                            stadium_name: match.fixture.venue.name,
+                            city: match.fixture.venue.city,
+                            api_match_id: match.fixture.id,
+                            rating: null,
+                            review: ''
                         })
                     });
 

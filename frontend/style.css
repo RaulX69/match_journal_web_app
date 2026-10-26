@@ -1,58 +1,116 @@
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+/* =========================================
+   DESIGN MODERN - DARK THEME
+   ========================================= */
+:root {
+    --primary-color: #3b82f6; /* Albastru luminos */
+    --success-color: #22c55e;
+    --danger-color: #ef4444;
+    --bg-color: #121212; /* Fundal general închis */
+    --card-bg: #1e1e1e;  /* Fundal cartele (ușor mai deschis decât fundalul) */
+    --text-color: #e0e0e0;
+    --border-color: #333333;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #96b6e6;
-    color: #333;
-    padding: 2rem;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-.app-container {
-    max-width: 700px;
-    margin: 0 auto;
+/* Panoul de Statistici & Cartele */
+.stat-box, .match-card {
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
 }
 
-h1 {
-    text-align: center;
-    margin-bottom: 2rem;
-    color: #1a1a1a;
+.stat-box { text-align: center; }
+.stat-box:hover { transform: translateY(-3px); }
+.match-card { margin-bottom: 25px; }
+.match-card:hover { box-shadow: 0 8px 15px rgba(0,0,0,0.5); }
+
+/* Scor și Input-uri */
+.score-badge {
+    background: #2a2a2a;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 24px;
+    font-weight: 900;
+    border: 2px solid var(--border-color);
+    color: #ffffff;
 }
 
-.search-section {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 2rem;
-}
-
-#team-input {
-    flex: 1;
+.review-input {
+    width: 100%;
+    max-width: 500px;
     padding: 12px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+    background-color: #2a2a2a;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-family: inherit;
+    resize: vertical;
 }
 
-#search-btn {
-    padding: 12px 24px;
-    font-size: 16px;
-    background-color: #007bff;
-    color: white;
+.review-input:focus { border-color: var(--primary-color); outline: none; }
+
+/* Inversăm culorile hărții pentru a deveni Dark Mode */
+#map {
+    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
+/* Păstrăm restul claselor de butoane (.btn, .btn-primary etc.) exact cum erau */
+
+/* Butoane Standardizate */
+.btn {
+    padding: 10px 20px;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: background 0.2s;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s ease;
 }
 
-#search-btn:hover {
-    background-color: #0056b3;
+.btn-primary { background-color: var(--primary-color); color: white; }
+.btn-primary:hover { background-color: #0056b3; }
+
+.btn-danger { background-color: var(--danger-color); color: white; }
+.btn-danger:hover { background-color: #c82333; }
+
+.btn-info { background-color: #17a2b8; color: white; }
+.btn-info:hover { background-color: #117a8b; }
+
+/* Input-uri și Review */
+.review-input {
+    width: 100%;
+    max-width: 500px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.2s;
 }
 
-.matches-list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+.review-input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+/* Design Responsive (Pentru Telefoane) */
+@media (max-width: 768px) {
+    #stats-container {
+        flex-direction: column;
+    }
+    .match-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    .team-name {
+        font-size: 18px;
+    }
 }

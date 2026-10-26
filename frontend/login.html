@@ -6,19 +6,20 @@
     <title>Logare - Jurnalul Meu</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div class="app-container" style="max-width: 400px; margin-top: 50px;">
-        <h1>Intră în cont</h1>
+<body style="display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box;">
+    
+    <div class="stat-box" style="width: 100%; max-width: 400px; padding: 40px;">
+        <h1 style="text-align: center; margin-bottom: 30px; font-size: 28px; color: var(--primary-color);">Intră în cont</h1>
         
-        <div style="display: flex; flex-direction: column; gap: 15px;">
-            <input type="email" id="log-email" placeholder="Adresa de email" style="padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
-            <input type="password" id="log-password" placeholder="Parola" style="padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <input type="email" id="log-email" class="review-input" placeholder="Adresa de email" style="width: 100%; box-sizing: border-box;">
+            <input type="password" id="log-password" class="review-input" placeholder="Parola" style="width: 100%; box-sizing: border-box;">
             
-            <button id="login-btn" style="padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Logare</button>
+            <button id="login-btn" class="btn btn-primary" style="padding: 14px; font-size: 16px; margin-top: 10px;">Logare</button>
         </div>
         
-        <p style="text-align: center; margin-top: 15px;">
-            Nu ai cont? <a href="register.html" style="color: #28a745; text-decoration: none;">Creează unul aici</a>
+        <p style="text-align: center; margin-top: 25px; font-size: 15px;">
+            Nu ai cont? <a href="register.html" style="color: var(--success-color); text-decoration: none; font-weight: bold;">Creează unul aici</a>
         </p>
     </div>
 
