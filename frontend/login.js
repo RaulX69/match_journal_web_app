@@ -17,6 +17,8 @@ document.getElementById('login-btn').addEventListener('click', async () => {
 
         if (response.ok) {
             localStorage.setItem('token', data.token);
+            localStorage.setItem('userEmail', document.getElementById('log-email').value);
+            localStorage.setItem('userRole', data.role);
             window.location.href = 'index.html';
         } else {
             alert(`Eroare: ${data.error || 'Email sau parolă incorecte'}`);

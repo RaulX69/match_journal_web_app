@@ -34,6 +34,7 @@ async function loadSavedMatches() {
             matchCard.className = 'match-card';
             
             matchCard.innerHTML = `
+                <button class="delete-x-btn" data-id="${match.id}">✖</button>
                 <div class="match-header" style="display: flex; justify-content: space-between; align-items: center;">
                     
                     <div style="flex: 1; text-align: center;">
@@ -67,7 +68,6 @@ async function loadSavedMatches() {
                     
                     <div style="margin-top: 15px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
                         <button class="btn btn-primary save-review-btn">Salvează Părerea</button>
-                        <button class="btn btn-danger delete-btn">Șterge</button>
                     </div>
                 </div>
 
@@ -182,7 +182,7 @@ async function loadSavedMatches() {
                 }
             });
 
-            const deleteBtn = matchCard.querySelector('.delete-btn');
+            const deleteBtn = matchCard.querySelector('.delete-x-btn');
 
             deleteBtn.addEventListener('click', async () => {
                 const isConfirmed = confirm('Ești sigur că vrei să ștergi acest meci din jurnal?');
@@ -294,10 +294,17 @@ async function loadProfile() {
 
         if (response.ok) {
             const user = await response.json();
-            // Afișăm un mesaj de salut și email-ul dedesubt
+            const isAdmin = user.role === 'admin' || localStorage.getItem('userRole') === 'admin';
+            const adminBadge = isAdmin 
+                ? `<span style="color: gold; font-weight: bold; font-size: 14px; margin-left: 10px;">⭐ Administrator</span>` 
+                : '';
+
             profileInfo.innerHTML = `
                 <p style="margin: 0; font-size: 18px;">Salut, <strong>${user.name || 'Pasionat de Fotbal'}</strong>!</p>
-                <p style="margin: 3px 0 0 0; font-size: 14px; color: #666;">${user.email}</p>
+                <div style="display: flex; align-items: center; margin-top: 3px;">
+                    <p style="margin: 0; font-size: 14px; color: #666;">${user.email}</p>
+                    ${adminBadge}
+                </div>
             `;
         } else {
             profileInfo.innerHTML = '<p style="margin: 0; color: red;">Eroare la încărcarea profilului.</p>';

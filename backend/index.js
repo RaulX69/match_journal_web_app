@@ -8,6 +8,7 @@ const authorize = require('./middleware/authorize');
 const axios = require('axios');
 const multer = require('multer');
 const path = require('path');
+const isAdmin = require('./middleware/isAdmin');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -50,8 +51,8 @@ app.post('/api/register', async (req, res) => {
         const bcryptPassword = await bcrypt.hash(password, salt);
 
         const newUser = await pool.query(
-            'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email, created_at',
-            [name, email, bcryptPassword]
+            'INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, created_at',
+            [name, email, bcryptPassword, 'user']
         );
 
         res.json({ message: 'Cont creat cu succes!', user: newUser.rows[0] });
@@ -83,10 +84,10 @@ app.post('/api/login', async (req, res) => {
         const token = jwt.sign(
             { user_id: user.rows[0].id },
             process.env.JWT_SECRET,
-            { expiresIn: '1h' }
+            { expiresIn: '24h' }
         );
 
-        res.json({ message: 'Autentificare reușită!', token: token });
+        res.json({ message: 'Autentificare reușită!', token: token, role: user.rows[0].role });
 
     } catch (err) {
         console.error(err.message);
@@ -98,7 +99,7 @@ app.post('/api/login', async (req, res) => {
 app.get('/auth/me', authorize, async (req, res) => {
     try {
         const user = await pool.query(
-            'SELECT id, name, email FROM users WHERE id = $1', 
+            'SELECT id, name, email, role FROM users WHERE id = $1', 
             [req.user]
         );
 
@@ -235,7 +236,7 @@ app.delete('/api/matches/:id', authorize, async (req, res) => {
     }
 });
 
-app.get('/api/search-matches', async (req, res) => {
+/*app.get('/api/search-matches', async (req, res) => {
     // Extragem termenul căutat pentru a-l afișa în consolă (opțional)
     const { team } = req.query; 
     console.log(`Căutare simulată pentru: ${team}`);
@@ -285,7 +286,7 @@ app.get('/api/search-matches', async (req, res) => {
         // Returnăm datele în formatul pe care îl așteaptă frontend-ul tău
         res.json(mockMatches); 
     }, 500);
-});
+});*/
 
 // Ruta pentru căutarea meciurilor după numele echipei folosind API-Football
 app.get('/api/search-matches', authorize, async (req, res) => {
@@ -343,6 +344,58 @@ app.post('/api/matches/:id/image', authorize, upload.single('match_image'), asyn
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: 'Eroare la încărcarea imaginii' });
+    }
+});
+
+// Ruta pentru preluarea tuturor utilizatorilor și a meciurilor lor (admin)
+app.get('/api/admin/users', authorize, isAdmin, async (req, res) => {
+    try {
+        const users = await pool.query('SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC');
+        const matches = await pool.query('SELECT id, user_id, home_team, away_team, home_score, away_score, match_date FROM matches');
+        
+        const usersWithMatches = users.rows.map(user => ({
+            ...user,
+            matches: matches.rows.filter(m => m.user_id === user.id)
+        }));
+        
+        res.json(usersWithMatches);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Eroare la preluarea datelor pentru admin.' });
+    }
+});
+
+// Ruta pentru promovarea unui utilizator la Admin (admin)
+app.put('/api/admin/users/:id/promote', authorize, isAdmin, async (req, res) => {
+    try {
+        await pool.query("UPDATE users SET role = 'admin' WHERE id = $1", [req.params.id]);
+        res.json({ message: 'Utilizator promovat la grad de Admin!' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Eroare la promovarea utilizatorului.' });
+    }
+});
+
+// Ruta pentru ștergerea unui utilizator și a tuturor meciurilor sale (admin)
+app.delete('/api/admin/users/:id', authorize, isAdmin, async (req, res) => {
+    try {
+        await pool.query('DELETE FROM matches WHERE user_id = $1', [req.params.id]);
+        await pool.query('DELETE FROM users WHERE id = $1', [req.params.id]);
+        res.json({ message: 'Utilizatorul și datele sale au fost șterse complet!' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Eroare la ștergerea utilizatorului.' });
+    }
+});
+
+// Ruta pentru ștergerea forțată a unui meci (admin)
+app.delete('/api/admin/matches/:id', authorize, isAdmin, async (req, res) => {
+    try {
+        await pool.query('DELETE FROM matches WHERE id = $1', [req.params.id]);
+        res.json({ message: 'Meci șters cu succes din baza de date!' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Eroare la ștergerea meciului.' });
     }
 });
 

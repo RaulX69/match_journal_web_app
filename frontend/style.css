@@ -1,12 +1,9 @@
-/* =========================================
-   DESIGN MODERN - DARK THEME
-   ========================================= */
 :root {
-    --primary-color: #3b82f6; /* Albastru luminos */
+    --primary-color: #3b82f6;
     --success-color: #22c55e;
     --danger-color: #ef4444;
-    --bg-color: #121212; /* Fundal general închis */
-    --card-bg: #1e1e1e;  /* Fundal cartele (ușor mai deschis decât fundalul) */
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
     --text-color: #e0e0e0;
     --border-color: #333333;
 }
@@ -17,7 +14,6 @@ body {
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* Panoul de Statistici & Cartele */
 .stat-box, .match-card {
     background-color: var(--card-bg);
     border-radius: 12px;
@@ -25,6 +21,7 @@ body {
     padding: 20px;
     border: 1px solid var(--border-color);
     transition: transform 0.2s ease, box-shadow 0.3s ease;
+    position: relative;
 }
 
 .stat-box { text-align: center; }
@@ -32,7 +29,6 @@ body {
 .match-card { margin-bottom: 25px; }
 .match-card:hover { box-shadow: 0 8px 15px rgba(0,0,0,0.5); }
 
-/* Scor și Input-uri */
 .score-badge {
     background: #2a2a2a;
     padding: 10px 20px;
@@ -57,14 +53,10 @@ body {
 
 .review-input:focus { border-color: var(--primary-color); outline: none; }
 
-/* Inversăm culorile hărții pentru a deveni Dark Mode */
 #map {
     filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 }
 
-/* Păstrăm restul claselor de butoane (.btn, .btn-primary etc.) exact cum erau */
-
-/* Butoane Standardizate */
 .btn {
     padding: 10px 20px;
     border: none;
@@ -84,7 +76,6 @@ body {
 .btn-info { background-color: #17a2b8; color: white; }
 .btn-info:hover { background-color: #117a8b; }
 
-/* Input-uri și Review */
 .review-input {
     width: 100%;
     max-width: 500px;
@@ -101,7 +92,31 @@ body {
     outline: none;
 }
 
-/* Design Responsive (Pentru Telefoane) */
+.delete-x-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, transform 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.delete-x-btn:hover {
+    background-color: #c82333;
+    transform: scale(1.1);
+}
+
 @media (max-width: 768px) {
     #stats-container {
         flex-direction: column;

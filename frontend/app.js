@@ -7,6 +7,19 @@ if (!token || token === 'undefined' || token === 'null') {
     window.location.href = 'login.html';
 }
 
+const currentRole = localStorage.getItem('userRole');
+const adminBtn = document.getElementById('admin-panel-btn');
+
+if (currentRole === 'admin' && adminBtn) {
+    adminBtn.style.display = 'inline-block';
+}
+
+if (adminBtn) {
+    adminBtn.addEventListener('click', () => {
+        window.location.href = 'admin.html';
+    });
+}
+
 searchBtn.addEventListener('click', async () => {
     const team = teamInput.value.trim();
     
