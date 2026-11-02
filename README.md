@@ -19,7 +19,7 @@ Gestionarea Utilizatorilor: Vizualizarea tuturor conturilor înregistrate, alăt
 Promovare Roluri: Posibilitatea de a promova un utilizator normal la gradul de Administrator.
 Moderare (Ștergere): Ștergerea meciurilor specifice din jurnalele altor utilizatori sau ștergerea definitivă a conturilor.
 
-🛠️ Tehnologii Utilizate
+Tehnologii Utilizate
 
 Frontend: HTML5, CSS3, JavaScript.
 Backend: Node.js, Express.js.
