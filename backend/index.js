@@ -236,58 +236,6 @@ app.delete('/api/matches/:id', authorize, async (req, res) => {
     }
 });
 
-/*app.get('/api/search-matches', async (req, res) => {
-    // Extragem termenul căutat pentru a-l afișa în consolă (opțional)
-    const { team } = req.query; 
-    console.log(`Căutare simulată pentru: ${team}`);
-
-    // DATE SIMULATE COMPLETE PENTRU PREZENTARE
-    const mockMatches = [
-        {
-            fixture: { 
-                id: 9991,
-                date: "2024-05-15T19:00:00+00:00",
-                venue: { id: 556, name: "Santiago Bernabéu", city: "Madrid" }
-            },
-            teams: {
-                home: { name: "Real Madrid", logo: "https://media.api-sports.io/football/teams/541.png" },
-                away: { name: "Barcelona", logo: "https://media.api-sports.io/football/teams/529.png" }
-            },
-            goals: { home: 3, away: 2 }
-        },
-        {
-            fixture: { 
-                id: 9992,
-                date: "2024-06-01T20:00:00+00:00",
-                venue: { id: 489, name: "Wembley Stadium", city: "London" }
-            },
-            teams: {
-                home: { name: "Borussia Dortmund", logo: "https://media.api-sports.io/football/teams/165.png" },
-                away: { name: "Real Madrid", logo: "https://media.api-sports.io/football/teams/541.png" }
-            },
-            goals: { home: 0, away: 2 }
-        },
-        {
-            fixture: { 
-                id: 9993,
-                date: "2024-04-17T19:00:00+00:00",
-                venue: { id: 151, name: "Etihad Stadium", city: "Manchester" }
-            },
-            teams: {
-                home: { name: "Manchester City", logo: "https://media.api-sports.io/football/teams/50.png" },
-                away: { name: "Real Madrid", logo: "https://media.api-sports.io/football/teams/541.png" }
-            },
-            goals: { home: 1, away: 1 }
-        }
-    ];
-
-    // Simulăm un mic delay pentru a părea că se încarcă de pe internet
-    setTimeout(() => {
-        // Returnăm datele în formatul pe care îl așteaptă frontend-ul tău
-        res.json(mockMatches); 
-    }, 500);
-});*/
-
 // Ruta pentru căutarea meciurilor după numele echipei folosind API-Football
 app.get('/api/search-matches', authorize, async (req, res) => {
     try {
